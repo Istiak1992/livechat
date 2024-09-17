@@ -1,0 +1,123 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  SUPER_ADMIN
+  ADMIN
+  USER
+}
+
+model Company {
+  id            String         @id @unique @default(uuid())
+  name          String
+  slug          String         @unique
+  image         String?
+  email         String?
+  phone         String         @unique
+  website       String?
+  address       String?
+  description   String?
+  created_at    DateTime       @default(now())
+  updated_at    DateTime       @updatedAt
+  is_deleted    Boolean        @default(false)
+  admins        User[]
+  chats         Chat[]
+  messages      Message[]
+  notifications Notification[]
+  invitations   Invite[]
+
+  @@map("companies")
+}
+
+model User {
+  id            String         @id @unique @default(uuid())
+  first_name    String
+  last_name     String
+  name          String
+  email         String         @unique
+  phone         String         @unique
+  password      String
+  image         String?
+  role          Role           @default(USER)
+  company_id    String?
+  company       Company?       @relation(fields: [company_id], references: [id])
+  chats         Chat[]
+  messages      Message[]
+  created_at    DateTime       @default(now())
+  updated_at    DateTime       @updatedAt
+  is_deleted    Boolean        @default(false)
+  notifications Notification[]
+
+  @@map("users")
+}
+
+model Chat {
+  id         String    @id @unique @default(uuid())
+  company_id String
+  company    Company   @relation(fields: [company_id], references: [id])
+  user_id    String
+  user       User      @relation(fields: [user_id], references: [id])
+  messages   Message[]
+  created_at DateTime  @default(now())
+  updated_at DateTime  @updatedAt
+  is_deleted Boolean   @default(false)
+
+  @@map("chats")
+}
+
+model Message {
+  id          String   @id @unique @default(uuid())
+  content     String
+  sender_id   String
+  sender_type String // Add this field to distinguish between user and company
+  user        User?    @relation(fields: [sender_id], references: [id], map: "messages_user_fkey")
+  company     Company? @relation(fields: [sender_id], references: [id], map: "messages_company_fkey")
+  chat_id     String
+  chat        Chat     @relation(fields: [chat_id], references: [id])
+  created_at  DateTime @default(now())
+  updated_at  DateTime @updatedAt
+  is_deleted  Boolean  @default(false)
+
+  @@map("messages")
+}
+
+model Notification {
+  id         String   @id @unique @default(uuid())
+  title      String
+  read       Boolean  @default(false)
+  link       String   @default("")
+  user_id    String?
+  user       User?    @relation(fields: [user_id], references: [id])
+  company_id String?
+  company    Company? @relation(fields: [company_id], references: [id])
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+  is_deleted Boolean  @default(false)
+
+  @@map("notifications")
+}
+
+enum InviteStatus {
+  PENDING
+  ACCEPTED
+}
+
+model Invite {
+  id         String       @id @unique @default(uuid())
+  email      String       @unique
+  status     InviteStatus @default(PENDING)
+  role       Role         @default(ADMIN)
+  company_id String
+  company    Company      @relation(fields: [company_id], references: [id])
+  created_at DateTime     @default(now())
+  updated_at DateTime     @updatedAt
+  is_deleted Boolean      @default(false)
+
+  @@map("invites")
+}
