@@ -5,8 +5,9 @@ import { successResponse } from '@/utils/format-success-response';
 import { errorResponse } from '@/utils/format-error-response';
 import { NextRequest } from 'next/server';
 
-export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
-	const id = params.id;
+export async function GET(request: NextRequest) {
+	const { searchParams } = new URL(request.url);
+	const id = searchParams.get('id') as string;
 
 	if (isEmpty(id)) {
 		return errorResponse({}, 'Chat id is required', 400);

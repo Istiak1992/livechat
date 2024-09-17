@@ -4,8 +4,9 @@ import { successResponse } from '@/utils/format-success-response';
 import isEmpty from 'lodash.isempty';
 import { NextRequest } from 'next/server';
 
-export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
-	const id = params.id;
+export async function GET(request: NextRequest) {
+	const { searchParams } = new URL(request.url);
+	const id = searchParams.get('id') as string;
 
 	if (isEmpty(id)) {
 		return errorResponse({}, 'Invitation ID is required', 400);
@@ -30,8 +31,9 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
 	);
 }
 
-export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
-	const id = params.id;
+export async function DELETE(request: NextRequest) {
+	const { searchParams } = new URL(request.url);
+	const id = searchParams.get('id') as string;
 
 	if (isEmpty(id)) {
 		return errorResponse({}, 'Invitation ID is required', 400);

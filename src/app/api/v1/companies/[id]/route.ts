@@ -12,8 +12,9 @@ import * as Yup from 'yup';
 /* 
 	GET /api/v1/companies/:id
 */
-export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
-	const id = params.id;
+export async function GET(request: NextRequest) {
+	const { searchParams } = new URL(request.url);
+	const id = searchParams.get('id') as string;
 
 	if (isEmpty(id)) {
 		return errorResponse({}, 'Company ID is required', 400);
@@ -53,8 +54,9 @@ const updateCompanySchema = Yup.object().shape({
 	website: Yup.string().url('Invalid website URL format').optional(),
 });
 
-export async function PUT(request: NextRequest, { params }: { params: { id: string } }) {
-	const id = params.id;
+export async function PUT(request: NextRequest) {
+	const { searchParams } = new URL(request.url);
+	const id = searchParams.get('id') as string;
 
 	const authorizationHeader = request.headers.get('Authorization')?.split(' ')[1];
 

@@ -10,8 +10,9 @@ import { formatValidationError } from '@/utils/format-validation-error';
 /* 
 	GET /api/v1/users/:id
 */
-export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
-	const id = params.id;
+export async function GET(request: NextRequest) {
+	const { searchParams } = new URL(request.url);
+	const id = searchParams.get('id') as string;
 
 	if (isEmpty(id)) {
 		return errorResponse({}, 'User ID is required', 400);
@@ -53,8 +54,9 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
 /* 
 	DELETE /api/v1/users/:id
 */
-export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
-	const id = params.id;
+export async function DELETE(request: NextRequest) {
+	const { searchParams } = new URL(request.url);
+	const id = searchParams.get('id') as string;
 
 	if (isEmpty(id)) {
 		return errorResponse({}, 'User ID is required', 400);
@@ -147,8 +149,9 @@ const updateUserSchema = Yup.object().shape({
 		),
 });
 
-export async function PUT(request: NextRequest, { params }: { params: { id: string } }) {
-	const id = params.id;
+export async function PUT(request: NextRequest) {
+	const { searchParams } = new URL(request.url);
+	const id = searchParams.get('id') as string;
 
 	if (isEmpty(id)) {
 		return errorResponse({}, 'User ID is required', 400);

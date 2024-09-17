@@ -3,8 +3,10 @@ import { NextRequest } from 'next/server';
 
 import prisma from '@/lib/prisma';
 import { successResponse } from '@/utils/format-success-response';
-import jwt, { Secret } from 'jsonwebtoken';
+import jwt, { JwtPayload, Secret } from 'jsonwebtoken';
 import { Role } from '@prisma/client';
+import config from '@/config';
+import { errorResponse } from '@/utils/format-error-response';
 
 type Notification = {
 	id: string;
@@ -19,22 +21,23 @@ type Notification = {
 };
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-export async function GET(req: NextRequest) {
-	// eslint-disable-next-line @typescript-eslint/no-explicit-any
-	const token: any = 'await getServerSession(authOptions)';
+export async function GET(request: NextRequest) {
+	const authorizationHeader = request.headers.get('Authorization')?.split(' ')[1];
 
-	if (!token) {
+	if (!authorizationHeader) {
 		throw new Error('Authorization token is missing');
 	}
 
-	const session = jwt.verify('token', process.env.JWT_SECRET as Secret);
+	let verifiedToken: JwtPayload;
 
-	if (typeof session === 'string') {
-		throw new Error('Invalid token');
+	try {
+		verifiedToken = jwt.verify(authorizationHeader, config.jwt.secret as Secret) as JwtPayload;
+	} catch (error) {
+		return errorResponse({}, 'Invalid or expired token', 401);
 	}
 
-	const userId = (session as jwt.JwtPayload).id as string;
-	const userRole = (session as jwt.JwtPayload).role as string;
+	const userId = verifiedToken.id as string;
+	const userRole = verifiedToken.role as string;
 
 	let notifications: Notification[] = [];
 
